@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="member">
+   
+   <insert id="insertJoin" parameterType="map">
+   <selectKey keyProperty="MEM_NUM" resultType="int" order="BEFORE">
+   select MEMBER_SEQ.NEXTVAL FROM DUAL
+   </selectKey>
+        <![CDATA[
+                INSERT INTO MEMBER
+                (
+                MEM_NUM,
+                MEM_ADMIN,
+                MEM_ID,
+                MEM_PW,
+                MEM_NAME,
+                MEM_NICK,
+                MEM_EMAIL,
+                MEM_PHONE,
+                MEM_ZIPCODE,
+                MEM_ADDRESS1,
+                MEM_ADDRESS2,
+                MEM_JOINDATE,
+                MEM_EMAILCK,
+                MEM_PHONECK,
+                MEM_WARNING,
+                MEM_DEL_GB
+                )
+                VALUES
+                (
+                #{MEM_NUM},
+                'N',
+                #{MEM_ID},
+                #{MEM_PW},
+                #{MEM_NAME},
+                #{MEM_NICK},
+                #{MEM_EMAIL},
+                #{MEM_PHONE},
+                #{MEM_ZIPCODE},
+                #{MEM_ADDRESS1},
+                #{MEM_ADDRESS2},
+                sysdate,
+                #{MEM_EMAILCK},
+                #{MEM_PHONECK},
+                0,
+                'N'
+                )
+        ]]>
+        </insert>
+        
+        <select id="selectIdCheck" parameterType="hashMap" resultType="Int">
+      <![CDATA[
+          SELECT  COUNT(MEM_ID)
+         FROM    MEMBER
+         WHERE   MEM_ID = #{MEM_ID}
+         AND     MEM_DEL_GB = 'N'
+      ]]>
+      </select>
+      
+      <select id="selectNickCheck" parameterType="hashMap" resultType="Int">
+      <![CDATA[
+          SELECT  COUNT(MEM_NICK)
+         FROM    MEMBER
+         WHERE   MEM_NICK = #{MEM_NICK}
+         AND     MEM_DEL_GB = 'N'
+      ]]>
+      </select>
+</mapper>

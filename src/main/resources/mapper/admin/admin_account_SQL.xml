@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="account">
+
+	<select id="adminDailyAccountingList" parameterType="hashmap" resultType="hashmap">
+		SELECT SUM(o.order_price) AS order_price 
+		FROM goods g 
+		INNER JOIN orders_detail od 
+		ON g.goods_num = od.order_detail_gnum
+		INNER JOIN ORDERS o
+		ON od.ORDER_DETAIL_NUM = o.ORDER_NUM
+		INNER JOIN admin_order ao
+		ON o.ORDER_NUM = ao.AORDER_ORDER_NUM 
+		WHERE TO_CHAR(o.order_date, 'YY/MM/DD') = #{Adate} AND ao.aorder_state='0'
+		<choose>
+		<when test="cate1 != '전체'">
+		AND g.goods_category1 = #{cate1}
+		</when>
+		<otherwise>
+		
+		</otherwise>
+		</choose>
+	</select>
+	
+	<select id="adminMonthlyAccountingList" parameterType="hashmap" resultType="hashmap">
+		SELECT SUM(o.order_price) AS order_price 
+		FROM goods g 
+		INNER JOIN orders_detail od 
+		ON g.goods_num = od.order_detail_gnum
+		INNER JOIN ORDERS o
+		ON od.ORDER_DETAIL_NUM = o.ORDER_NUM
+		INNER JOIN admin_order ao
+		ON o.ORDER_NUM = ao.AORDER_ORDER_NUM 
+		WHERE TO_CHAR(o.order_date, 'YY/MM') = #{Adate} AND ao.aorder_state='0'
+		<choose>
+		<when test="cate1 != '전체'">
+		AND g.goods_category1 = #{cate1}
+		</when>
+		<otherwise>
+		
+		</otherwise>
+		</choose>
+	</select>
+	
+</mapper>

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="main">
+   <select id="selectMainList" parameterType="hashmap" resultType="hashmap">
+      <![CDATA[ 
+         select aaa.*
+       , (select count(*) as total_count 
+          FROM COMMENTS C 
+          where c.COMMENTS_PARENT = aaa.BOARD_NUM AND COMMENTS_DEL_GB = 'N'
+          ) AS TOTAL_COMMENTS
+   from (
+        SELECT
+           row_number() over (order by board_count desc) rnum,
+           B.BOARD_NUM,
+           B.BOARD_CAT,
+           B.BOARD_TITLE,
+           M.MEM_NICK,
+           B.BOARD_DATE,
+           B.BOARD_COUNT,
+           B.BOARD_WRITER
+        FROM MEMBER M, BOARD B
+        WHERE M.MEM_NUM = B.BOARD_WRITER 
+          AND B.BOARD_DEL_GB='N'
+        )aaa
+   where aaa.rnum between 0 and 5
+   ORDER BY BOARD_NUM DESC
+      ]]>
+   </select>
+   
+   <select id="selectNoticeList" parameterType="hashmap" resultType="hashmap">
+      <![CDATA[ 
+         select aaa.*
+    , (select count(*) as total_count 
+       FROM COMMENTS C 
+       where c.COMMENTS_PARENT = aaa.NOTICE_NUM AND COMMENTS_DEL_GB = 'N'
+       ) AS TOTAL_COMMENTS
+from (
+        SELECT
+           row_number() over (order by notice_date desc) rnum,
+            NOTICE_NUM,
+            NOTICE_TITLE,
+            NOTICE_WRITER,
+            NOTICE_COUNT,
+            NOTICE_DATE,
+            NOTICE_TYPE
+         FROM NOTICE
+        WHERE NOTICE_DEL_GB = 'N'
+        )aaa
+   where aaa.rnum between 0 and 5
+   ORDER BY NOTICE_NUM DESC
+      ]]>
+   </select>
+   
+   <select id="mainSearch" parameterType="hashmap" resultType="hashmap"> <!-- 메인검색 리스트 -->
+        SELECT    AAA.* 
+FROM   ( 
+        SELECT    COUNT(*) OVER() AS TOTAL_COUNT, 
+                        AA.*,
+                        ROWNUM AS NUM
+                  FROM   ( 
+         SELECT GOODS_NUM,
+                GOODS_NAME,
+                GOODS_CONTENT,
+                GOODS_MPRICE,
+                GOODS_CPRICE, 
+                GOODS_DATE,
+                GOODS_CATEGORY1,
+                GOODS_CATEGORY2,
+                GOODS_HASH,
+                GOODS_COUNT, 
+                GOODS_LIKECNT,
+                GOODS_IMG_THUM
+            FROM GOODS
+            WHERE 
+            <if test="keyword != null">
+            (GOODS_NAME LIKE '%' || #{keyword} || '%' OR GOODS_HASH LIKE '%' || #{keyword} || '%')
+             </if>
+            ORDER BY GOODS_NUM DESC
+      ) AA 
+               ) AAA 
+         WHERE    AAA.NUM BETWEEN #{START} AND #{END} 
+
+         
+   </select>
+   
+   <sql id="pagingPre">
+   SELECT AAA.*
+   FROM(
+   SELECT
+   COUNT(*) OVER() AS TOTAL_COUNT,
+   AA.*
+   FROM(
+   </sql>
+   
+   <sql id="pagingPost">
+   ) AA
+   ) AAA
+   WHERE AAA.RNUM BETWEEN #{START} AND #{END}
+   </sql>
+
+
+</mapper>

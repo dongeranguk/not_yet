@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="board">
+   <select id="selectBoardList" parameterType="hashmap" resultType="hashmap">
+      <![CDATA[
+      select aaa.*
+    , (select count(*) as total_count 
+       FROM COMMENTS C 
+       where c.COMMENTS_PARENT = aaa.BOARD_NUM AND COMMENTS_DEL_GB = 'N'
+       ) AS TOTAL_COMMENTS
+from (
+     SELECT
+        row_number() over (order by board_date desc) rnum,
+        B.BOARD_NUM,
+        B.BOARD_CAT,
+        B.BOARD_TITLE,
+        M.MEM_NICK,
+        B.BOARD_DATE,
+        B.BOARD_COUNT,
+        B.BOARD_WRITER
+     FROM MEMBER M, BOARD B
+     WHERE M.MEM_NUM = B.BOARD_WRITER 
+       AND B.BOARD_DEL_GB='N'
+     )aaa
+where aaa.rnum between 0 and 15
+ORDER BY BOARD_NUM DESC
+      ]]>
+   </select>
+   
+   <insert id="insertBoard" parameterType="hashmap" useGeneratedKeys="true" keyProperty="BOARD_NUM">
+   <selectKey keyProperty="IDX" resultType="string" order="BEFORE">
+        SELECT BOARD_SEQ.NEXTVAL FROM DUAL
+   </selectKey>
+   <![CDATA[
+   insert into board(
+      board_num,
+      board_cat,
+      board_title,
+      board_writer,
+      board_content,
+      board_count,
+      board_date,
+      board_del_gb,
+      board_nick,
+      BOARD_IMAGE
+   )      
+   values (
+      #{IDX},
+      #{BOARD_CAT},
+      #{BOARD_TITLE},
+      #{MEM_NUM},
+      #{BOARD_CONTENT},
+      DEFAULT,
+      sysdate,
+      default,
+      #{MEM_NICK},
+      #{BOARD_IMAGE, jdbcType=VARCHAR}
+   )
+   ]]>  
+   </insert>
+   
+ <select id="openBoardDetail" parameterType="hashmap" resultType="hashmap">
+         SELECT 
+            BOARD_NUM,
+            BOARD_CAT,
+            BOARD_TITLE,
+            BOARD_NICK,
+            BOARD_DATE,
+            BOARD_COUNT,
+            BOARD_CONTENT,
+            BOARD_WRITER
+         FROM
+            BOARD
+         WHERE
+            BOARD_NUM = #{BOARD_NUM}
+   </select> 
+   
+   <update id="updateHitCnt" parameterType="hashmap">
+      <![CDATA[
+      update 
+      BOARD set BOARD_COUNT=NVL(BOARD_COUNT,0)+1 
+      where BOARD_NUM=#{BOARD_NUM}
+      ]]>   
+   </update>
+   
+   <update id="deleteBoard" parameterType="hashmap" >
+<![CDATA[
+   
+   UPDATE  BOARD
+   SET     BOARD_DEL_GB = 'Y'
+   WHERE   BOARD_NUM = #{BOARD_NUM}
+   
+]]>
+</update>
+
+   <select id="updateBoardForm" parameterType="hashmap" resultType="hashmap">
+      <![CDATA[
+         SELECT
+            BOARD_NUM,
+            BOARD_CAT,
+            BOARD_TITLE,
+            BOARD_CONTENT,
+            BOARD_DATE
+         FROM
+            BOARD
+         WHERE
+            BOARD_NUM = #{BOARD_NUM}
+      ]]>
+   </select>
+   
+   <update id="updateBoard" parameterType="hashmap">
+      <![CDATA[
+         UPDATE
+            BOARD
+         SET
+            BOARD_CAT = #{BOARD_CAT},
+            BOARD_TITLE = #{BOARD_TITLE},
+            BOARD_CONTENT = #{BOARD_CONTENT},
+            BOARD_DATE = sysdate
+         WHERE
+            BOARD_NUM = #{BOARD_NUM}                 
+      ]]>
+   </update>
+   
+   <select id="etcList" parameterType="hashmap" resultType="hashmap">
+      <![CDATA[
+         select aaa.*
+      , (select count(*) as total_count 
+         FROM COMMENTS C 
+         where c.COMMENTS_PARENT = aaa.BOARD_NUM AND COMMENTS_DEL_GB = 'N'
+         ) AS TOTAL_COMMENTS
+   from (
+          SELECT
+            row_number() over (order by board_date desc) rnum,
+            B.BOARD_NUM,
+            B.BOARD_CAT,
+            B.BOARD_TITLE,
+            M.MEM_NICK,
+            B.BOARD_DATE,
+            B.BOARD_COUNT
+          FROM 
+            MEMBER M, BOARD B
+            WHERE 
+               M.MEM_NUM = B.BOARD_WRITER AND B.BOARD_DEL_GB='N' AND B.BOARD_CAT = 'etc'
+            ORDER BY B.BOARD_NUM DESC
+        )aaa
+        where aaa.rnum between 0 and 15
+      ]]>
+   </select>
+   
+   <select id="HomeTraining" parameterType="hashmap" resultType="hashmap">
+      <![CDATA[
+      select aaa.*
+    , (select count(*) as total_count 
+       FROM COMMENTS C 
+       where c.COMMENTS_PARENT = aaa.BOARD_NUM AND COMMENTS_DEL_GB = 'N'
+       ) AS TOTAL_COMMENTS
+from (
+         SELECT
+            row_number() over (order by board_date desc) rnum,
+            B.BOARD_NUM,
+            B.BOARD_CAT,
+            B.BOARD_TITLE,
+            M.MEM_NICK,
+            B.BOARD_DATE,
+            B.BOARD_COUNT
+         FROM 
+            MEMBER M, BOARD B
+            WHERE 
+               M.MEM_NUM = B.BOARD_WRITER AND B.BOARD_DEL_GB='N' AND B.BOARD_CAT = 'HomeTraining'
+            ORDER BY B.BOARD_NUM DESC
+      )aaa
+      where aaa.rnum between 0 and 15
+      ]]>
+   </select>
+   
+   <select id="HealthyDiet" parameterType="hashmap" resultType="hashmap">
+      <![CDATA[
+      select aaa.*
+    , (select count(*) as total_count 
+       FROM COMMENTS C 
+       where c.COMMENTS_PARENT = aaa.BOARD_NUM AND COMMENTS_DEL_GB = 'N'
+       ) AS TOTAL_COMMENTS
+from (
+         SELECT
+            row_number() over (order by board_date desc) rnum,
+            B.BOARD_NUM,
+            B.BOARD_CAT,
+            B.BOARD_TITLE,
+            M.MEM_NICK,
+            B.BOARD_DATE,
+            B.BOARD_COUNT
+         FROM 
+            MEMBER M, BOARD B
+            WHERE 
+               M.MEM_NUM = B.BOARD_WRITER AND B.BOARD_DEL_GB='N' AND B.BOARD_CAT = 'HealthyDiet'
+            ORDER BY B.BOARD_NUM DESC
+      )aaa
+      where aaa.rnum between 0 and 15
+      ]]>
+   </select>
+   
+   <select id="HomeCare" parameterType="hashmap" resultType="hashmap">
+      <![CDATA[
+      select aaa.*
+    , (select count(*) as total_count 
+       FROM COMMENTS C 
+       where c.COMMENTS_PARENT = aaa.BOARD_NUM AND COMMENTS_DEL_GB = 'N'
+       ) AS TOTAL_COMMENTS
+from (
+         SELECT
+            row_number() over (order by board_date desc) rnum,
+            B.BOARD_NUM,
+            B.BOARD_CAT,
+            B.BOARD_TITLE,
+            M.MEM_NICK,
+            B.BOARD_DATE,
+            B.BOARD_COUNT
+         FROM 
+            MEMBER M, BOARD B
+            WHERE 
+               M.MEM_NUM = B.BOARD_WRITER AND B.BOARD_DEL_GB='N' AND B.BOARD_CAT = 'HomeCare'
+            ORDER BY B.BOARD_NUM DESC
+      )aaa
+      where aaa.rnum between 0 and 15
+      ]]>
+   </select>
+   
+    <select id="RecentlyBoard" parameterType="hashmap" resultType="hashmap">
+      <![CDATA[
+      select aaa.*
+    , (select count(*) as total_count 
+       FROM COMMENTS C 
+       where c.COMMENTS_PARENT = aaa.BOARD_NUM AND COMMENTS_DEL_GB = 'N'
+       ) AS TOTAL_COMMENTS
+from (
+         SELECT
+            row_number() over (order by board_date desc) rnum,
+            B.BOARD_NUM,
+            B.BOARD_CAT,
+            B.BOARD_TITLE,
+            M.MEM_NICK,
+            B.BOARD_DATE,
+            B.BOARD_COUNT
+         FROM 
+            MEMBER M, BOARD B
+            WHERE 
+               M.MEM_NUM = B.BOARD_WRITER AND B.BOARD_DEL_GB='N'
+            ORDER BY B.BOARD_DATE DESC
+      )aaa
+      where aaa.rnum between 0 and 15
+      ]]>
+   </select>
+   
+    <select id="CountBoard" parameterType="hashmap" resultType="hashmap">
+      <![CDATA[
+      select aaa.*
+    , (select count(*) as total_count 
+       FROM COMMENTS C 
+       where c.COMMENTS_PARENT = aaa.BOARD_NUM AND COMMENTS_DEL_GB = 'N'
+       ) AS TOTAL_COMMENTS
+from (
+         SELECT
+            row_number() over (order by board_date desc) rnum,
+            B.BOARD_NUM,
+            B.BOARD_CAT,
+            B.BOARD_TITLE,
+            M.MEM_NICK,
+            B.BOARD_DATE,
+            B.BOARD_COUNT
+         FROM 
+            MEMBER M, BOARD B
+            WHERE 
+               M.MEM_NUM = B.BOARD_WRITER AND B.BOARD_DEL_GB='N'
+            ORDER BY B.BOARD_COUNT DESC
+      )aaa
+      where aaa.rnum between 0 and 15
+      ]]>
+   </select>
+   
+   <select id="SearchBoard" parameterType="hashmap" resultType="hashmap">
+      <![CDATA[
+      select aaa.*
+    , (select count(*) as total_count 
+       FROM COMMENTS C 
+       where c.COMMENTS_PARENT = aaa.BOARD_NUM AND COMMENTS_DEL_GB = 'N'
+       ) AS TOTAL_COMMENTS
+from (
+         SELECT
+            row_number() over (order by board_date desc) rnum,
+            B.BOARD_NUM,
+            B.BOARD_CAT,
+            B.BOARD_CONTENT,
+            B.BOARD_TITLE,
+            M.MEM_NICK,
+            B.BOARD_DATE,
+            B.BOARD_COUNT
+            
+         FROM 
+            MEMBER M, BOARD B
+         WHERE 
+               M.MEM_NUM = B.BOARD_WRITER AND B.BOARD_DEL_GB='N' AND (B.BOARD_TITLE like '%' || #{keyword} || '%' OR B.BOARD_CONTENT like '%' || #{keyword} || '%')
+            ORDER BY B.BOARD_NUM DESC
+      )aaa
+      where aaa.rnum between 0 and 15
+      ]]>
+   </select>
+   
+   <select id="selectTopBoardList" parameterType="hashmap" resultType="hashmap">
+      <![CDATA[
+      select aaa.*
+    , (select count(*) as total_count 
+       FROM COMMENTS C 
+       where c.COMMENTS_PARENT = aaa.BOARD_NUM AND COMMENTS_DEL_GB = 'N'
+       ) AS TOTAL_COMMENTS
+from (
+     SELECT
+        row_number() over (order by board_count desc) rnum,
+        B.BOARD_NUM,
+        B.BOARD_CAT,
+        B.BOARD_TITLE,
+        M.MEM_NICK,
+        B.BOARD_DATE,
+        B.BOARD_COUNT,
+        B.BOARD_WRITER
+     FROM MEMBER M, BOARD B
+     WHERE M.MEM_NUM = B.BOARD_WRITER 
+       AND B.BOARD_DEL_GB='N'
+     )aaa
+where aaa.rnum between 0 and 5
+ORDER BY BOARD_NUM DESC
+      ]]>
+   </select>
+</mapper>

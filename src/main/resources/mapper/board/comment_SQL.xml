@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="comment">
+   <select id="selectCommentList" parameterType="hashmap" resultType="hashmap">
+      <![CDATA[
+          SELECT
+            C.COMMENTS_NUM,
+            C.COMMENTS_PARENT,
+            C.COMMENTS_CONTENT,
+            M.MEM_NICK,
+            C.COMMENTS_DATE,
+            C.COMMENTS_WRITER,
+            C.COMMENTS_DEL_GB
+         FROM 
+            MEMBER M, BOARD B, COMMENTS C
+            WHERE 
+              C.COMMENTS_PARENT = #{BOARD_NUM} AND  B.BOARD_NUM = C.COMMENTS_PARENT AND 
+              C.COMMENTS_DEL_GB='N' AND C.COMMENTS_WRITER = M.MEM_NUM
+            ORDER BY C.COMMENTS_NUM DESC
+      ]]>
+   </select>
+   
+       <insert id="insertComment" parameterType="hashmap" useGeneratedKeys="true" keyProperty="BOARD_NUM">
+   <selectKey keyProperty="IDX" resultType="string" order="BEFORE">
+        SELECT COMMENTS_SEQ.NEXTVAL FROM DUAL
+   </selectKey>
+      INSERT INTO COMMENTS(
+            COMMENTS_NUM,
+            COMMENTS_PARENT,
+               COMMENTS_WRITER,
+              COMMENTS_CONTENT,
+             COMMENTS_DATE,
+            COMMENTS_DEL_GB
+            )
+        VALUES
+         (
+             #{IDX},
+            #{BOARD_NUM},
+            #{MEM_NUM},
+            #{COMMENTS_CONTENT},
+            sysdate,
+			default 
+          )
+   </insert> 
+   
+   <update id="deleteComment" parameterType="hashmap" >
+   <![CDATA[
+      
+      UPDATE  COMMENTS
+      SET     COMMENTS_DEL_GB = 'Y'
+      WHERE   COMMENTS_NUM = #{COMMENTS_NUM}
+      
+   ]]>
+   </update>
+   
+   <select id="openCommentModifyForm" parameterType="hashmap" resultType="hashmap">
+         SELECT 
+            B.BOARD_NUM,
+            B.BOARD_CAT,
+            B.BOARD_TITLE,
+            B.BOARD_NICK,
+            B.BOARD_DATE,
+            B.BOARD_COUNT,
+            B.BOARD_CONTENT,
+            C.COMMENTS_CONTENT,
+            C.COMMENTS_NUM
+         FROM
+            BOARD B, COMMENTS C
+         WHERE
+            B.BOARD_NUM = #{BOARD_NUM} AND C.COMMENTS_PARENT = #{BOARD_NUM} AND C.COMMENTS_NUM = #{COMMENTS_NUM}
+   </select> 
+   
+   <update id="updateComment" parameterType="hashmap">
+         UPDATE
+            COMMENTS
+         SET
+            COMMENTS_CONTENT = #{COMMENTS_CONTENT}   
+         WHERE
+            COMMENTS_NUM = #{COMMENTS_NUM} 
+   </update>
+
+</mapper>

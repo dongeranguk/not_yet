@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="acs">
+	<select resultType="hashmap" parameterType="hashmap" id="acsBoardList">
+         SELECT 
+            NOTICE_NUM,
+            NOTICE_TITLE,
+            NOTICE_WRITER,
+            NOTICE_COUNT,
+            NOTICE_DATE,
+            NOTICE_TYPE
+         FROM NOTICE
+         WHERE NOTICE_DEL_GB = 'N'
+         	and NOTICE_TYPE='공 지' OR NOTICE_TYPE='이벤트'
+         ORDER BY NOTICE_NUM DESC
+   </select>
+   
+   <select id="acsDetail" parameterType="hashmap" resultType="hashmap">
+         SELECT 
+            NOTICE_NUM,
+            NOTICE_TITLE,
+            NOTICE_WRITER,
+            NOTICE_DATE,
+            NOTICE_COUNT,
+            NOTICE_CONTENT,
+            NOTICE_TYPE
+         FROM
+            NOTICE
+         WHERE
+            NOTICE_NUM = #{NOTICE_NUM}
+   </select> 
+   
+   <update id="updateHitCnt" parameterType="hashmap">
+      <![CDATA[
+      update 
+      NOTICE set NOTICE_COUNT=NVL(NOTICE_COUNT,0)+1 
+      where NOTICE_NUM=#{NOTICE_NUM}
+      ]]>   
+   </update>
+   
+   <insert id="insertAcs" parameterType="hashmap">
+   			<![CDATA[
+   		INSERT INTO NOTICE(
+            NOTICE_NUM,
+            NOTICE_TITLE,
+            NOTICE_WRITER,
+            NOTICE_CONTENT,
+            NOTICE_COUNT,
+            NOTICE_DATE,
+            NOTICE_DEL_GB,
+            NOTICE_TYPE
+            )
+        VALUES(
+            NOTICE_SEQ.NEXTVAL,
+            #{NOTICE_TITLE},
+            #{NOTICE_WRITER},
+            #{NOTICE_CONTENT},
+            DEFAULT,
+            SYSDATE,
+            DEFAULT,
+            #{NOTICE_TYPE}
+            )
+        ]]>   			
+   </insert>
+   
+   <select id="updateForm" parameterType="hashmap" resultType="hashmap">
+   		<![CDATA[
+   			SELECT 
+   				NOTICE_NUM,
+   				NOTICE_TITLE,
+   				NOTICE_CONTENT,
+   				NOTICE_DATE,
+   				NOTICE_TYPE
+   			FROM
+   				NOTICE
+   			WHERE
+   				NOTICE_NUM = #{NOTICE_NUM}
+   		]]>
+   </select>
+   
+   <update id="updateAcs" parameterType="hashmap">
+	<![CDATA[
+	UPDATE
+		NOTICE
+	SET
+		NOTICE_TITLE = #{NOTICE_TITLE},
+		NOTICE_CONTENT = #{NOTICE_CONTENT},
+		NOTICE_DATE = sysdate,
+		NOTICE_TYPE = #{NOTICE_TYPE}
+	WHERE
+		NOTICE_NUM = #{NOTICE_NUM}
+	]]>
+	</update>
+	
+	<update id="deleteAcs" parameterType="hashmap">
+	<![CDATA[
+  	   UPDATE  
+  	   	   NOTICE
+  	   SET 
+  	       NOTICE_DEL_GB = 'Y'
+       WHERE   NOTICE_NUM = #{NOTICE_NUM}
+   
+]]>
+</update>
+
+<select id="notice" resultType="hashmap" parameterType="hashmap">
+      <![CDATA[
+         SELECT 
+            NOTICE_NUM,
+            NOTICE_TITLE,
+            NOTICE_WRITER,
+            NOTICE_COUNT,
+            NOTICE_DATE,
+            NOTICE_TYPE
+         FROM NOTICE
+         WHERE NOTICE_DEL_GB = 'N' AND NOTICE_TYPE = '공 지'
+         ORDER BY NOTICE_NUM DESC
+      ]]>
+   </select>
+   
+   <select id="event" resultType="hashmap" parameterType="hashmap">
+      <![CDATA[
+         SELECT 
+            NOTICE_NUM,
+            NOTICE_TITLE,
+            NOTICE_WRITER,
+            NOTICE_COUNT,
+            NOTICE_DATE,
+            NOTICE_TYPE
+         FROM NOTICE
+         WHERE NOTICE_DEL_GB = 'N' AND NOTICE_TYPE = '이벤트'
+         ORDER BY NOTICE_NUM DESC
+      ]]>
+   </select>
+   
+   <select id="SearchAcs" parameterType="hashmap" resultType="hashmap">
+   		<![CDATA[
+   			SELECT 
+            NOTICE_NUM,
+            NOTICE_TITLE,
+            NOTICE_WRITER,
+            NOTICE_COUNT,
+            NOTICE_DATE,
+            NOTICE_TYPE
+         FROM NOTICE
+         WHERE NOTICE_DEL_GB = 'N' AND
+		 (NOTICE_TITLE like '%' || #{keyword} || '%' OR NOTICE_CONTENT like '%' || #{keyword} || '%')
+         ORDER BY NOTICE_NUM DESC
+   		]]>
+   </select>
+   
+   <!-- FAQ -->
+   <select resultType="hashmap" parameterType="hashmap" id="faqBoardList">
+      <![CDATA[
+         SELECT 
+            NOTICE_NUM,
+            NOTICE_TITLE,
+            NOTICE_WRITER,
+            NOTICE_COUNT,
+            NOTICE_DATE,
+            NOTICE_TYPE
+         FROM NOTICE
+         WHERE NOTICE_DEL_GB = 'N'
+         AND NOTICE_TYPE='FAQ'
+         ORDER BY NOTICE_NUM DESC
+      ]]>
+   </select>
+   
+   <insert id="insertFaq" parameterType="hashmap">
+   			<![CDATA[
+   		INSERT INTO NOTICE(
+            NOTICE_NUM,
+            NOTICE_TITLE,
+            NOTICE_WRITER,
+            NOTICE_CONTENT,
+            NOTICE_COUNT,
+            NOTICE_DATE,
+            NOTICE_DEL_GB,
+            NOTICE_TYPE
+            )
+        VALUES(
+            NOTICE_SEQ.NEXTVAL,
+            #{NOTICE_TITLE},
+            #{NOTICE_WRITER},
+            #{NOTICE_CONTENT},
+            DEFAULT,
+            SYSDATE,
+            DEFAULT,
+            'FAQ'
+            )
+        ]]>   			
+   </insert>
+   
+   <select id="faqUpdateForm" parameterType="hashmap" resultType="hashmap">
+   		<![CDATA[
+   			SELECT 
+   				NOTICE_NUM,
+   				NOTICE_TITLE,
+   				NOTICE_CONTENT,
+   				NOTICE_DATE
+   			FROM
+   				NOTICE
+   			WHERE
+   				NOTICE_NUM = #{NOTICE_NUM}
+   		]]>
+   </select>
+   
+   <update id="updateFaq" parameterType="hashmap">
+	<![CDATA[
+	UPDATE
+		NOTICE
+	SET
+		NOTICE_TITLE = #{NOTICE_TITLE},
+		NOTICE_CONTENT = #{NOTICE_CONTENT},
+		NOTICE_DATE = sysdate
+	WHERE
+		NOTICE_NUM = #{NOTICE_NUM}
+	]]>
+	</update>
+   
+</mapper>
+

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="adminOrder">
+	
+	<select id="order_admin_a" parameterType="hashmap" resultType="hashmap"> <!-- 주문현황 보기 -->
+		<![CDATA[
+		SELECT
+			D.ORDER_DETAIL_GNUM,
+			M.MEM_NUM, M.MEM_ID, M.MEM_NAME,
+			G.GOODS_NAME,
+			O.ORDER_TCOST, O.ORDER_PRICE, TO_CHAR(O.ORDER_DATE, 'YY/MM/DD') ORDER_DATE,
+			O.ORDER_PAY_RBANK, O.ORDER_NUM,
+			A.AORDER_TRACKING, A.AORDER_STATE, A.AORDER_ORDER_NUM,
+	        
+	        (SELECT COUNT(G.GOODS_NUM) from GOODS G where D.ORDER_DETAIL_GNUM = G.GOODS_NUM) as HAP_CNT
+			
+			FROM MEMBER M, ADMIN_ORDER A, ORDERS O, ORDERS_DETAIL D, GOODS G
+			
+			WHERE M.MEM_NUM = O.ORDER_USER_NUM
+				AND O.ORDER_NUM = D.ORDER_DETAIL_DNUM
+                AND O.ORDER_NUM = A.AORDER_ORDER_NUM
+				AND D.ORDER_DETAIL_GNUM = G.GOODS_NUM
+				AND A.AORDER_STATE = #{AORDER_STATE}
+				AND D.ORDER_DETAIL_NUM IN (SELECT MIN(ORDER_DETAIL_NUM) AS Dno from ORDERS_DETAIL group by ORDER_DETAIL_DNUM)
+			ORDER BY O.ORDER_NUM ASC	
+		]]>
+	</select>
+	
+	<select id="order_detail" parameterType="hashmap" resultType="hashmap"> <!-- 주문list 상세보기 -->
+		<![CDATA[
+			SELECT
+				M.MEM_NAME, M.MEM_PHONE, M.MEM_EMAIL, 
+				O.ORDER_NUM, O.ORDER_USER_NAME, O.ORDER_PHONE1, O.ORDER_DZIPCODE,
+				O.ORDER_DADD1, O.ORDER_DADD2, O.ORDER_PAY, O.ORDER_PRICE,
+				O.ORDER_DCOST, O.ORDER_TCOST, O.ORDER_DMEMO,
+				AO.AORDER_STATE
+			FROM MEMBER M, ORDERS O, ADMIN_ORDER AO
+			WHERE M.MEM_NUM=O.ORDER_USER_NUM
+				AND O.ORDER_NUM=#{AORDER_ORDER_NUM}
+				AND AORDER_ORDER_NUM=#{AORDER_ORDER_NUM}
+		]]>
+	</select>
+	
+	<select id="order_detail_sub" parameterType="hashmap" resultType="hashmap"> <!-- 주문detail 상세보기 -->
+		<![CDATA[
+			SELECT
+				G.GOODS_NUM, G.GOODS_NAME, G.GOODS_IMG_THUM, G.GOODS_MPRICE,
+				OD.ORDER_DETAIL_SIZE, OD.ORDER_DETAIL_COLOR, OD.ORDER_DETAIL_AMOUNT
+			FROM GOODS G, ORDERS_DETAIL OD
+			WHERE OD.ORDER_DETAIL_GNUM=G.GOODS_NUM
+				AND OD.ORDER_DETAIL_DNUM=#{AORDER_ORDER_NUM}
+		]]>
+	</select>
+	
+	<update id="order_state" parameterType="hashmap" > <!-- 주문상태 변경 -->
+		<![CDATA[
+			UPDATE ADMIN_ORDER
+			SET AORDER_STATE = AORDER_STATE+1
+			WHERE AORDER_ORDER_NUM=#{AORDER_ORDER_NUM}
+		]]>
+	</update>
+	
+	<update id="order_state_ex" parameterType="hashmap" > <!-- 주문상태.배송 변경 -->
+		<![CDATA[
+			UPDATE ADMIN_ORDER
+			SET
+				AORDER_STATE=AORDER_STATE+1,
+				AORDER_TRACKING=#{AORDER_TRACKING}
+			WHERE AORDER_ORDER_NUM=#{AORDER_ORDER_NUM}
+		]]>
+	</update>
+	
+	<select id="as_admin_list" parameterType="hashmap" resultType="hashmap"> <!-- 주문detail 상세보기 -->
+		<![CDATA[
+			SELECT
+				AO.AORDER_NUM, AO.AORDER_ORDER_NUM, AO.MEMBER_NUM,
+				AO.AORDER_STATE, AO.AORDER_TRACKING, AO.ORDER_REPORT_COMMENT,
+				TO_CHAR(AO.AS_SDATE, 'YYYY-MM-DD') AS_SDATE, TO_CHAR(AO.AS_EDATE, 'YYYY/MM/DD') AS_EDATE,
+				M.MEM_ID, M.MEM_NAME, M.MEM_PHONE, M.MEM_EMAIL 
+			FROM ADMIN_ORDER AO, MEMBER M
+			WHERE
+				AO.MEMBER_NUM=M.MEM_NUM
+				AND AO.AORDER_STATE=#{AORDER_STATE}
+			ORDER BY AO.AORDER_NUM ASC
+		]]>
+	</select>
+	
+	<update id="as_cancle_a" parameterType="hashmap" > <!-- // as요청취소  -->
+		<![CDATA[
+		UPDATE ADMIN_ORDER
+		SET
+			AORDER_STATE = '3',
+			ORDER_REPORT_COMMENT='교환/환불 취소',
+			AS_SDATE=sysdate
+		WHERE
+			AORDER_NUM=#{AORDER_NUM}
+		]]>
+	</update>
+	
+	<update id="as_ok_state" parameterType="hashmap" > <!-- 신규 as요청확인(AS_LIST state 확인중으로 변경)  -->
+		<![CDATA[
+			UPDATE ADMIN_ORDER
+			SET
+			 AS_EDATE = SYSDATE
+			WHERE AORDER_NUM = ${AORDER_NUM}
+		]]>
+	</update>
+	<update id="as_ok_orderState" parameterType="hashmap" > <!-- 신규 as요청확인(Order_LIST STATE변경)  -->
+		<![CDATA[
+			UPDATE ADMIN_ORDER
+			SET AORDER_STATE = AORDER_STATE+1
+			WHERE AORDER_NUM = ${AORDER_NUM}
+		]]>
+	</update>
+	
+</mapper>

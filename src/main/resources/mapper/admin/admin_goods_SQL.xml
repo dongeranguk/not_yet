@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 21.11.01 17:43 오류수정 이전 코드 -->
+<mapper namespace="aGoods">
+<delete id="deleteAdminGoods" parameterType="hashmap">
+<![CDATA[
+   DELETE FROM GOODS WHERE GOODS_NUM = #{GOODS_NUM}
+   ]]>
+</delete>
+<delete id="deleteAdminGoodsATT" parameterType="hashmap">
+<![CDATA[
+   DELETE FROM GOODS_ATTRIBUTE WHERE GOODS_NUM = #{GOODS_NUM}
+   ]]>
+</delete>
+<select id="aGoodsList" parameterType="hashmap" resultType="hashmap">
+   <include refid="common.pagingPre"/>
+   <![CDATA[
+   SELECT
+   	  ROW_NUMBER() OVER (ORDER BY GOODS_NUM DESC) RNUM,
+      GOODS_NUM,
+      GOODS_NAME,
+      GOODS_CATEGORY1,
+      GOODS_CATEGORY2,
+      GOODS_CPRICE,
+      GOODS_MPRICE,
+      GOODS_DATE
+   FROM
+      GOODS
+      ]]>
+	<include refid="common.pagingPost"/>
+	</select>
+	
+<update id="updateGoods" parameterType="hashmap"> <!-- 상품 업데이트 -->
+		<![CDATA[
+			UPDATE  GOODS
+			SET     GOODS_NUM = #{IDX},
+					GOODS_NAME = #{GOODS_NAME},
+					GOODS_CONTENT = #{GOODS_CONTENT},
+					GOODS_MPRICE = #{GOODS_MPRICE},
+					GOODS_CPRICE = #{GOODS_CPRICE},
+					GOODS_DATE = sysdate,
+					GOODS_CATEGORY1 = #{GOODS_CATEGORY1},
+					GOODS_CATEGORY2 = #{GOODS_CATEGORY2},
+					GOODS_HASH = #{GOODS_HASH},
+					GOODS_IMG_THUM = #{GOODS_IMG_THUM}
+			WHERE   GOODS_NUM = #{IDX}
+		]]>
+	</update>
+<update id="attributeDelete" parameterType="hashmap"> <!-- 상품 옵션 업뎃 -->
+		<![CDATA[
+			UPDATE  GOODS_ATTRIBUTE
+			  SET
+			  GOODS_STATUS = '1'
+			WHERE   GOODS_NUM = #{IDX}
+		]]>
+	</update>
+   <!-- 상품검색 -->
+   <select id="selectTypeList" parameterType="muscle.common.common.SearchDTO" resultType="hashmap">
+   		<choose>
+   			<when test="searchType.equals('ALL')" >
+			SELECT    	  
+				ROW_NUMBER() OVER (ORDER BY GOODS_NUM DESC) RNUM,
+				GOODS_NUM,
+				GOODS_NAME,
+				GOODS_CATEGORY1,
+				GOODS_CATEGORY2,
+				GOODS_CPRICE,
+				GOODS_MPRICE,
+				GOODS_DATE
+			FROM GOODS
+			WHERE GOODS_NUM LIKE (#{keyword}) 
+				or GOODS_NAME LIKE (#{keyword}) 
+				or GOODS_CATEGORY1 LIKE (#{keyword}) 
+				or GOODS_CATEGORY2 LIKE (#{keyword}) 
+			ORDER BY GOODS_NUM DESC
+			</when>
+			<otherwise>
+			SELECT    	  
+				ROW_NUMBER() OVER (ORDER BY GOODS_NUM DESC) RNUM,
+				GOODS_NUM,
+				GOODS_NAME,
+				GOODS_CATEGORY1,
+				GOODS_CATEGORY2,
+				GOODS_CPRICE,
+				GOODS_MPRICE,
+				GOODS_DATE
+			FROM GOODS
+			WHERE ${searchType} LIKE (#{keyword}) 
+			ORDER BY GOODS_NUM DESC
+			</otherwise>
+		</choose>
+   		</select>
+</mapper>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="adminMem">
+	<select id="selectMemberList" parameterType="hashmap" resultType="hashmap">
+		<include refid="common.pagingPre"/>
+         SELECT
+            MEM_NUM,
+            MEM_ID,
+            MEM_NAME,
+            MEM_NICK,
+            MEM_EMAIL,
+            MEM_PHONE,            
+            MEM_ZIPCODE,
+            MEM_ADDRESS1,
+            MEM_ADDRESS2,
+            MEM_WARNING,
+            to_char(MEM_JOINDATE) AS MEM_JOINDATE, 
+            MEM_DEL_GB
+            FROM
+               MEMBER
+            WHERE
+               MEM_ADMIN = 'N'    
+		<include refid="common.pagingPost"/>       
+	</select>
+   
+   <select id="selectMemberSearchList" parameterType="hashmap" resultType="hashmap">
+      <include refid="common.pagingPre"/>
+         SELECT 
+            MEM_NUM, 
+            MEM_ID, 
+            MEM_NAME, 
+            MEM_NICK, 
+            MEM_EMAIL, 
+            MEM_PHONE,            
+            MEM_ZIPCODE, 
+            MEM_ADDRESS1, 
+            MEM_ADDRESS2, 
+            MEM_WARNING, 
+            to_char(MEM_JOINDATE) AS MEM_JOINDATE,  
+            MEM_DEL_GB 
+            FROM 
+               MEMBER 
+            WHERE 
+               MEM_ADMIN = 'N' AND (MEM_ID like '%'|| #{key2} || '%')
+      <include refid="common.pagingPost"/>  
+   </select>
+   
+    <select id="openAdminMemberDetail" parameterType="hashmap" resultType="hashmap">
+		SELECT
+		    MEM_NUM,
+		    MEM_ID,
+		    MEM_NAME,
+		    MEM_NICK,
+		    MEM_EMAIL,
+		    MEM_PHONE,
+		    MEM_ZIPCODE,
+		    MEM_ADDRESS1,
+		    MEM_ADDRESS2,
+		    to_char(MEM_JOINDATE) AS MEM_JOINDATE,
+		    MEM_WARNING,
+		    MEM_DEL_GB 
+		FROM
+		    MEMBER
+		WHERE
+		    MEM_NUM = #{MEM_NUM} 
+   </select> 
+   
+   <update id="ignoreAdminMember" parameterType="hashmap">
+         UPDATE
+            MEMBER
+         SET
+            MEM_DEL_GB = #{MEM_DEL_GB}
+         WHERE
+            MEM_NUM = #{MEM_NUM}
+   </update>
+</mapper>

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="report">
+   
+   <insert id="insertReport" parameterType="hashmap" useGeneratedKeys="true" keyProperty="REPORT_NUM">
+   <selectKey keyProperty="IDX" resultType="string" order="BEFORE">
+        SELECT REPORT_INFO_SEQ.NEXTVAL FROM DUAL
+   </selectKey>
+   <![CDATA[
+      insert into report_info(
+      REPORT_NUM,
+      REPORT_MEM_NUM1,
+      REPORT_BOARD_NUM,
+      REPORT_MEM_NUM2,
+      REPORT_COMMENT,
+      REPORT_STATE
+      )
+   values(
+      #{IDX},
+      #{BOARD_WRITER},
+      #{BOARD_NUM},
+      #{MEM_NUM},
+      #{REPORT_COMMENT},
+      default
+      )
+   ]]>
+   </insert>
+
+
+   <select id="selectBoardReport" parameterType="hashmap" resultType="hashmap">
+        <![CDATA[
+           SELECT 
+           BOARD_NUM,
+           BOARD_NICK,
+           BOARD_WRITER     
+           FROM
+           BOARD
+           WHERE
+           BOARD_NUM = #{BOARD_NUM}
+        ]]>
+   </select>
+   
+   <select id="selectCommentReport" parameterType="hashmap" resultType="hashmap">
+        <![CDATA[
+           SELECT 
+           C.COMMENTS_NUM,
+           M.MEM_NICK,
+           C.COMMENTS_WRITER,
+           B.BOARD_NUM
+           FROM
+              COMMENTS C, MEMBER M, BOARD B
+           WHERE
+           C.COMMENTS_NUM = #{COMMENTS_NUM} AND B.BOARD_NUM = #{COMMENTS_PARENT} AND M.MEM_NUM = #{COMMENTS_WRITER}
+        ]]>
+   </select>
+   
+   <insert id="insertCommentReport" parameterType="hashmap" useGeneratedKeys="true" keyProperty="REPORT_NUM">
+   <selectKey keyProperty="IDX" resultType="string" order="BEFORE">
+        SELECT REPORT_INFO_SEQ.NEXTVAL FROM DUAL
+   </selectKey>
+   <![CDATA[
+      insert into report_info(
+      REPORT_NUM,
+      REPORT_BOARD_NUM,
+      REPORT_MEM_CNUM,
+      REPORT_COMMENT_NUM,
+      REPORT_MEM_NUM2,
+      REPORT_COMMENT,
+      REPORT_STATE
+      )
+   values(
+      #{IDX},
+      #{BOARD_NUM},
+      #{COMMENTS_WRITER},
+      #{COMMENTS_NUM},
+      #{MEM_NUM},
+      #{REPORT_COMMENT},
+      default
+      )
+   ]]>
+   </insert>
+
+
+   
+<select id="selectReportList" parameterType="hashmap" resultType="hashmap">
+      <![CDATA[
+      SELECT
+         count(R.REPORT_MEM_NUM1) CNT,
+       R.REPORT_NUM,
+       R.REPORT_MEM_NUM1,
+       R.REPORT_BOARD_NUM,
+       R.REPORT_MEM_CNUM,
+       R.REPORT_COMMENT_NUM,
+       R.REPORT_MEM_NUM2,
+       R.REPORT_COMMENT,
+       R.REPORT_STATE,
+       M.MEM_NUM,
+       M.MEM_NICK,
+       M.MEM_ID,
+       M.MEM_WARNING
+   FROM REPORT_INFO R, MEMBER M
+   WHERE M.MEM_NUM = R.REPORT_MEM_NUM1 OR M.MEM_NUM = R.REPORT_MEM_CNUM 
+    group by R.REPORT_NUM, R.REPORT_MEM_NUM1, R.REPORT_BOARD_NUM, R.REPORT_MEM_CNUM, R.REPORT_COMMENT_NUM, 
+R.REPORT_MEM_NUM2, R.REPORT_COMMENT, R.REPORT_STATE, M.MEM_NUM, M.MEM_NICK, 
+M.MEM_ID, M.MEM_WARNING
+   ORDER BY R.REPORT_NUM DESC
+      ]]>
+   </select>
+   
+   <select id="selectReportDetail" parameterType="hashmap" resultType="hashmap">
+   <![CDATA[
+     SELECT
+          R.REPORT_NUM,
+          R.REPORT_MEM_NUM1,
+          R.REPORT_BOARD_NUM,
+          R.REPORT_MEM_CNUM,
+          R.REPORT_COMMENT_NUM,
+          R.REPORT_MEM_NUM2,
+          R.REPORT_COMMENT,
+          R.REPORT_STATE,
+          M.MEM_NUM,
+          M.MEM_NICK,
+          M.MEM_ID
+      FROM
+         REPORT_INFO R, MEMBER M
+      WHERE
+         (M.MEM_NUM = R.REPORT_MEM_NUM1 OR M.MEM_NUM = R.REPORT_MEM_CNUM)
+         AND R.REPORT_NUM = #{REPORT_NUM}
+   ]]>
+   </select>
+
+   <update id="updateStatus" parameterType="hashmap">
+         <![CDATA[
+         update
+         REPORT_INFO
+      set
+         REPORT_STATE = #{REPORT_STATE}
+      where
+         REPORT_NUM = #{REPORT_NUM}
+      ]]>
+   </update>
+   
+   <update id="memWarning" parameterType="hashmap">
+
+         <![CDATA[
+         UPDATE
+	         MEMBER
+    	SET
+    		MEM_WARNING=MEM_WARNING+1
+    	WHERE
+    		MEM_NUM=#{REPORT_MEM_NUM}
+      ]]>
+   </update>
+   
+   <update id="updateMemStatus" parameterType="hashmap">
+
+         <![CDATA[
+         UPDATE  
+            MEMBER 
+         SET     
+            MEM_DEL_GB = 'Y'
+         WHERE   
+            MEM_WARNING >= 10
+         AND MEM_NUM=#{REPORT_MEM_NUM}
+      ]]>
+   </update>
+   
+</mapper>

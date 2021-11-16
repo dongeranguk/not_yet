@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="order">
+
+	<!-- 주문페이지에 필요한 회원정보 검색 -->
+	<select id="orderMemberInfo" parameterType="hashmap" resultType="hashmap">
+		<![CDATA[
+			SELECT
+				MEM_NUM,
+				MEM_ID,
+				MEM_NAME,
+				MEM_NICK,
+				MEM_EMAIL,
+				MEM_PHONE,
+				MEM_ZIPCODE,
+				MEM_ADDRESS1,
+				MEM_ADDRESS2
+			FROM 
+				MEMBER
+			WHERE
+				MEM_NUM=#{MEM_NUM}
+		]]>
+	</select>
+	
+	<!-- 주문추가 -->
+   <insert id="insertOrder" parameterType="hashmap">
+      <selectKey keyProperty="ORDER_NUM" resultType="int"
+         order="BEFORE">
+         SELECT ORDERS_SEQ.NEXTVAL FROM DUAL
+      </selectKey>
+      <![CDATA[
+         INSERT INTO ORDERS
+         (
+         
+             ORDER_NUM,
+            ORDER_USER_NUM,
+            ORDER_USER_NAME,
+            ORDER_PHONE1,
+            ORDER_PHONE2,
+            ORDER_DATE,
+            ORDER_PRICE,
+            ORDER_DCOST,
+            ORDER_TCOST,
+            ORDER_DZIPCODE,
+            ORDER_DADD1,
+            ORDER_DADD2,
+            ORDER_DMEMO,
+            ORDER_PAY,
+            ORDER_PAY_NAME,
+            ORDER_PAY_RBANK,
+            ORDER_PAY_RACCOUNT,
+            ORDER_PAY_CASHRE
+          
+         )
+         VALUES
+         (
+             #{ORDER_NUM},
+            #{ORDER_USER_NUM},
+            #{ORDER_USER_NAME},
+            #{ORDER_PHONE1},
+            #{ORDER_PHONE2},
+            SYSDATE,
+            #{ORDER_PRICE},
+            #{ORDER_DCOST},
+            #{ORDER_TCOST},
+            #{ORDER_DZIPCODE},
+            #{ORDER_DADD1},
+            #{ORDER_DADD2},
+            #{ORDER_DMEMO},
+            #{ORDER_PAY},
+            #{ORDER_PAY_NAME},
+            #{ORDER_PAY_RBANK},
+            #{ORDER_PAY_RACCOUNT},
+            #{ORDER_PAY_CASHRE}
+         )
+      ]]>
+   </insert>
+
+   <!-- 주문상세 추가 -->
+   <insert id="insertOrderDetail" parameterType="hashmap">
+      <!-- ORDERLIST의 ORDER_NO찾기 -->
+      <selectKey keyProperty="ORDER_NUM" resultType="int"
+         order="BEFORE">
+            SELECT DISTINCT
+                ORDER_NUM
+            FROM
+                ORDERS
+            WHERE
+                 ORDER_USER_NUM = #{ORDER_USER_NUM}
+                  AND ORDER_NUM = (SELECT MAX(ORDER_NUM) FROM ORDERS)
+      </selectKey>
+      <![CDATA[
+         INSERT INTO ORDERS_DETAIL
+         (
+            ORDER_DETAIL_NUM,
+             ORDER_DETAIL_DNUM, 
+             ORDER_DETAIL_GNUM,
+             ORDER_DETAIL_AMOUNT,
+             ORDER_DETAIL_SIZE,
+             ORDER_DETAIL_COLOR,
+             ORDER_DETAIL_DATE
+         )
+         VALUES   
+            (ORDERS_DETAIL_SEQ.NEXTVAL,
+             #{ORDER_NUM},
+             #{ORDER_DETAIL_GNUM},
+             #{ORDER_DETAIL_AMOUNT},
+             #{ORDER_DETAIL_SIZE},
+             #{ORDER_DETAIL_COLOR},
+             SYSDATE
+            )
+      ]]>
+   </insert>
+
+   <!-- 주문완료 페이지에 뿌려줄 ORDER_NO -->
+   <select id="selectOrder" parameterType="hashmap"
+      resultType="hashmap">
+      <![CDATA[
+         SELECT 
+            MAX(ORDER_NUM) ORDER_NUM 
+         FROM 
+            ORDERS
+         WHERE 
+            ORDER_USER_NUM= #{ORDER_USER_NUM}
+      ]]>
+   </select>
+
+   <!-- 주문 배송정보 수정 -->
+   <update id="orderModify" parameterType="hashmap">
+      <![CDATA[
+         UPDATE ORDERS 
+         SET
+            ORDER_USER_NAME = #{ORDER_USER_NAME},
+            ORDER_PHONE1 = #{ORDER_PHONE1},
+            ORDER_DZIPCODE = #{ORDER_DZIPCODE},
+            ORDER_DADD1 = #{ORDER_DADD1},
+            ORDER_DADD2 = #{ORDER_DADD2}
+         WHERE
+            ORDER_NUM= #{ORDER_NUM}
+      ]]>
+   </update>
+   
+   <!-- admin order 추가 -->
+   <insert id="insertAdmin" parameterType="hashmap">
+      <selectKey keyProperty="AORDER_ORDER_NUM" resultType="int"
+         order="BEFORE">
+         SELECT 
+            MAX(ORDER_NUM) ORDER_NUM 
+         FROM 
+            ORDERS
+         WHERE 
+            ORDER_USER_NUM= #{ORDER_USER_NUM}
+      </selectKey>
+      <![CDATA[
+         INSERT INTO ADMIN_ORDER
+         (
+            AORDER_NUM,
+            AORDER_ORDER_NUM,
+            MEMBER_NUM,
+            AORDER_STATE
+          
+         )
+         VALUES
+         (
+             ADMIN_ORDER_SEQ.NEXTVAL,
+             #{AORDER_ORDER_NUM},
+            #{ORDER_USER_NUM},
+            DEFAULT
+         )
+      ]]>
+   </insert>
+
+</mapper>

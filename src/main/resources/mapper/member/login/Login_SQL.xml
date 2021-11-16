@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="login">
+
+<!-- 마이바티스 쿼리문 -->
+	<!-- 로그인 -->
+		<select id="selectId" parameterType="hashmap" resultType="hashmap">
+	<![CDATA[
+		SELECT  
+				MEM_NUM,
+				MEM_ADMIN,
+				MEM_NICK,
+                MEM_ID,
+                MEM_PW,
+                MEM_DEL_GB,
+               	MEM_PHONE,
+               	MEM_RANK 
+        FROM    
+        		MEMBER
+		WHERE   
+				MEM_ID = #{MEM_ID}
+		AND     
+				MEM_DEL_GB = 'N'
+	]]>
+	</select>
+	
+	<!-- 아이디찾기 -->
+	<select id="findIdWithEmail" parameterType="hashmap" resultType="hashmap">
+	<![CDATA[
+		SELECT  MEM_ID
+		FROM    MEMBER
+		WHERE   MEM_NAME = #{MEM_NAME}
+		AND     MEM_EMAIL = #{MEM_EMAIL}
+		AND     MEM_DEL_GB = 'N'
+	]]>
+	</select>
+		
+	
+	<!-- 아이디찾기 -->
+	<select id="findId" parameterType="hashmap" resultType="Integer">
+	<![CDATA[
+		SELECT  COUNT(*)
+		FROM    MEMBER
+		WHERE   MEM_NAME = #{MEM_NAME}
+		AND     MEM_EMAIL = #{MEM_EMAIL}
+		AND     MEM_DEL_GB = 'N'
+	]]>
+	</select>
+	<!-- 비밀번호 찾기 -->
+	<select id="findPwWithEmail" parameterType="hashmap" resultType="Integer">
+	<![CDATA[
+		SELECT  COUNT(*)
+		FROM    MEMBER
+		WHERE   MEM_ID = #{MEM_ID}
+		AND     MEM_EMAIL = #{MEM_EMAIL}
+		AND     MEM_DEL_GB = 'N'
+	]]>
+	</select>
+	
+	<!-- 비밀번호 변경폼 -->
+	<update id="updateTempPw" parameterType="String">
+	<![CDATA[
+    UPDATE  MEMBER
+	SET     MEM_PW = #{authCode}
+	WHERE   MEM_ID = #{MEM_ID}
+	AND     MEM_EMAIL = #{MEM_EMAIL}
+	AND     MEM_DEL_GB = 'N'
+	]]>
+	</update>
+	
+	<select id="findKakaoId" parameterType="hashMap"
+		resultType="hashMap">
+		<![CDATA[
+		SELECT *
+		FROM MEMBER
+		WHERE MEM_KAKAO_ID = #{MEM_KAKAO_ID} AND MEM_KAKAO_LINK = 'Y'
+		AND MEM_DEL_GB = 'N'
+		]]>
+	</select>
+	
+	<update id="kakaoUpdate" parameterType="hashMap">
+		UPDATE MEMBER
+		SET MEM_KAKAO_ID = #{MEM_KAKAO_ID},
+			MEM_KAKAO_LINK = #{MEM_KAKAO_LINK}
+	</update>
+	
+	
+	<update id="kakaoUpdate1" parameterType="hashMap">
+		<if test="#{MEM_ID} != null and ''">
+		UPDATE MEMBER
+		SET MEM_KAKAO_ID = #{MEM_KAKAO_ID},
+			MEM_KAKAO_LINK = #{MEM_KAKAO_LINK}
+		WHERE MEM_ID = #{MEM_ID} AND MEM_KAKAO_ID = 'N' AND MEM_KAKAO_LINK = 'N'
+		</if>
+	</update>
+	
+	<select id="finder" parameterType="hashMap" resultType="hashMap">
+		SELECT *
+		FROM MEMBER
+		WHERE MEM_ID = #{MEM_ID}
+	</select>
+
+	<select id="kakaoLogin" parameterType="hashMap"
+		resultType="hashMap">
+		SELECT *
+		FROM MEMBER
+		WHERE MEM_ID = #{MEM_ID}
+	</select>
+
+	<insert id="kakaoJoin4" parameterType="hashMap">
+		<selectKey keyProperty="MEM_NUM" resultType="int"
+			order="BEFORE">
+			SELECT MEMBER_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO MEMBER
+		(
+		MEM_NUM,
+		MEM_ADMIN,
+		MEM_ID,
+		MEM_PW,
+		MEM_NAME,
+		MEM_NICK,
+		MEM_EMAIL,
+		MEM_PHONE,
+		MEM_ZIPCODE,
+		MEM_ADDRESS1,
+		MEM_ADDRESS2,
+		MEM_JOINDATE,
+		MEM_EMAILCK,
+		MEM_PHONECK,
+		MEM_WARNING,
+		MEM_DEL_GB,
+		MEM_KAKAO_ID,
+		MEM_KAKAO_LINK
+		)
+		VALUES
+		(
+		#{MEM_NUM},
+		'N',
+		#{MEM_ID},
+		#{MEM_PW},
+		#{MEM_NAME},
+		#{MEM_NICK},
+		#{MEM_EMAIL},
+		#{MEM_PHONE},
+		#{MEM_ZIPCODE},
+		#{MEM_ADDRESS1},
+		#{MEM_ADDRESS2},
+		SYSDATE,
+		#{MEM_EMAILCK},
+		#{MEM_PHONECK},
+		0,
+		'N',
+		#{MEM_KAKAO_ID},
+		#{MEM_KAKAO_LINK}
+		)
+	</insert>
+</mapper>

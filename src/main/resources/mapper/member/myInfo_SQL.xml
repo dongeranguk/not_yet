@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="myInfo">
+	<select id="selectMyInfo" parameterType="hashmap" resultType="hashmap">
+		SELECT 
+			MEM_NICK
+		FROM
+			MEMBER
+		WHERE
+			MEM_ID = #{MEM_ID}
+	</select>
+	
+	<!-- <select id="orderStatus" parameterType="hashmap" resultType="hashmap">
+		SELECT
+	
+	</select> -->
+	
+	<select id="selectMyInfoModifyForm" parameterType="hashmap" resultType="hashmap">
+		<![CDATA[
+			SELECT
+				MEM_ID,
+				MEM_PW,
+				MEM_NAME,
+				MEM_NICK,
+				MEM_EMAIL,
+				MEM_PHONE,
+				MEM_ZIPCODE,
+				MEM_ADDRESS1,
+				MEM_ADDRESS2,
+				MEM_RANK
+			FROM
+				MEMBER
+			WHERE
+				MEM_ID = #{MEM_ID}		
+		]]>
+	</select>
+	
+	<update id="updateMyInfo" parameterType="hashmap">
+		<![CDATA[
+			UPDATE
+				MEMBER
+			SET
+				MEM_PW = #{MEM_PW},
+				MEM_NAME = #{MEM_NAME},
+				MEM_NICK = #{MEM_NICK},
+				MEM_EMAIL = #{MEM_EMAIL},
+				MEM_PHONE = #{MEM_PHONE},
+				MEM_ZIPCODE = #{MEM_ZIPCODE},
+				MEM_ADDRESS1 = #{MEM_ADDRESS1},
+				MEM_ADDRESS2 = #{MEM_ADDRESS2}
+			WHERE
+				MEM_ID = #{MEM_ID}
+		 ]]>
+	</update>
+	
+	   <update id="deleteMyInfo" parameterType="hashmap">
+      <![CDATA[
+         UPDATE
+            MEMBER
+         SET
+            MEM_DEL_GB = 'Y'
+         WHERE
+            MEM_ID = #{MEM_ID}
+       ]]>
+   </update>
+   
+   <select id="selectMyBoardList" parameterType="hashmap" resultType="hashmap">
+      <![CDATA[
+      select aaa.*
+    , (select count(*) as total_count 
+       FROM COMMENTS C 
+       where c.COMMENTS_PARENT = aaa.BOARD_NUM AND COMMENTS_DEL_GB = 'N'
+       ) AS TOTAL_COMMENTS
+from (
+	SELECT
+        row_number() over (order by board_date desc) rnum,
+        B.BOARD_NUM,
+        B.BOARD_CAT,
+        B.BOARD_TITLE,
+        M.MEM_NICK,
+        B.BOARD_DATE,
+        B.BOARD_COUNT,
+        B.BOARD_WRITER
+	FROM MEMBER M, BOARD B
+	WHERE M.MEM_NUM = B.BOARD_WRITER 
+	AND B.BOARD_DEL_GB='N'
+	AND MEM_ID = #{MEM_ID}
+     )aaa
+where aaa.rnum between 0 and 10
+ORDER BY BOARD_NUM DESC
+      ]]>
+   </select>
+</mapper>
+
